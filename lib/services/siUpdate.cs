@@ -21,7 +21,7 @@ namespace Services
         /// <returns>Task representing the pause response.</returns>
         public static async Task<object> InitiatePauseSI(object parameters, Config config)
         {
-            var logger = new Logger(null, config.LogLevel);
+            var logger = new Logger(config.LogLevel);
             logger.Info("Initiating SI pause", new
             {
                 SiId = GetProperty(parameters, "siId")
@@ -47,7 +47,7 @@ namespace Services
             var headers = HeaderHelper.BuildSiHeaders(tokens.Jws);
 
             // Make API request
-            var response = await ApiRequestHelper.MakeSiServiceRequest(new RequestOptions
+            var response = await ApiRequestHelper.MakeSiServiceRequest(new ApiRequestOptions
             {
                 Method = "POST",
                 BaseUrl = config.BaseUrl,
@@ -70,7 +70,7 @@ namespace Services
         /// <returns>Task representing the activation response.</returns>
         public static async Task<object> InitiateActivateSI(object parameters, Config config)
         {
-            var logger = new Logger(null, config.LogLevel);
+            var logger = new Logger(config.LogLevel);
             logger.Info("Initiating SI activation", new
             {
                 SiId = GetProperty(parameters, "siId")
@@ -96,7 +96,7 @@ namespace Services
             var headers = HeaderHelper.BuildSiHeaders(tokens.Jws);
 
             // Make API request
-            var response = await ApiRequestHelper.MakeSiServiceRequest(new RequestOptions
+            var response = await ApiRequestHelper.MakeSiServiceRequest(new ApiRequestOptions
             {
                 Method = "POST",
                 BaseUrl = config.BaseUrl,

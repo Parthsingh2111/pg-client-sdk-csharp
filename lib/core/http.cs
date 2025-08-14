@@ -79,9 +79,9 @@ namespace Helpers
         /// <exception cref="HttpRequestException">Thrown when the request fails.</exception>
         public static async Task<object> Post(string url, object data, Dictionary<string, string> headers = null)
         {
+            var logger = new Logger();
             try
             {
-                var logger = new Logger();
                 logger.LogRequest("POST", url, headers, data);
 
                 HttpContent content = null;
@@ -107,14 +107,13 @@ namespace Helpers
                 };
 
                 var response = await MakeRequest(url, options);
-                var logger = new Logger();
                 logger.LogResponse("POST", url, 200, response);
 
                 return response ?? new object();
             }
             catch (Exception ex)
             {
-                Logger.Error($"POST request failed: {url}", ex);
+                logger.Error($"POST request failed: {url}", ex);
                 throw;
             }
         }
@@ -128,9 +127,9 @@ namespace Helpers
         /// <exception cref="HttpRequestException">Thrown when the request fails.</exception>
         public static async Task<object> Get(string url, Dictionary<string, string> headers = null)
         {
+            var logger = new Logger();
             try
             {
-                var logger = new Logger();
                 logger.LogRequest("GET", url, headers);
 
                 var options = new HttpRequestOptions
@@ -140,14 +139,13 @@ namespace Helpers
                 };
 
                 var response = await MakeRequest(url, options);
-                var logger = new Logger();
                 logger.LogResponse("GET", url, 200, response);
 
                 return response ?? new object();
             }
             catch (Exception ex)
             {
-                Logger.Error($"GET request failed: {url}", ex);
+                logger.Error($"GET request failed: {url}", ex);
                 throw;
             }
         }
@@ -162,9 +160,9 @@ namespace Helpers
         /// <exception cref="HttpRequestException">Thrown when the request fails.</exception>
         public static async Task<object> Put(string url, object data, Dictionary<string, string> headers = null)
         {
+            var logger = new Logger();
             try
             {
-                var logger = new Logger();
                 logger.LogRequest("PUT", url, headers, data);
 
                 HttpContent content = null;
@@ -190,14 +188,13 @@ namespace Helpers
                 };
 
                 var response = await MakeRequest(url, options);
-                var logger = new Logger();
                 logger.LogResponse("PUT", url, 200, response);
 
                 return response ?? new object();
             }
             catch (Exception ex)
             {
-                Logger.Error($"PUT request failed: {url}", ex);
+                logger.Error($"PUT request failed: {url}", ex);
                 throw;
             }
         }
@@ -208,8 +205,8 @@ namespace Helpers
     /// </summary>
     public class HttpRequestOptions
     {
-        public string Method { get; set; }
-        public Dictionary<string, string> Headers { get; set; }
-        public HttpContent Body { get; set; }
+        public string Method { get; set; } = "";
+        public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
+        public HttpContent Body { get; set; } = null;
     }
 }

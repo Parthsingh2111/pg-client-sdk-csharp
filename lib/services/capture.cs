@@ -40,8 +40,8 @@ namespace Services
             var headers = HeaderHelper.BuildJwtHeaders(tokens.Jws);
 
             // Make API request
-            string gid = GetProperty(parameters, "gid")?.ToString();
-            var response = await ApiRequestHelper.MakeTransactionServiceRequest(new RequestOptions
+            string gid = GetProperty(parameters, "gid")?.ToString() ?? "";
+            var response = await ApiRequestHelper.MakeTransactionServiceRequest(new ApiRequestOptions
             {
                 Method = "POST",
                 BaseUrl = config.BaseUrl,

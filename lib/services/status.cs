@@ -36,7 +36,7 @@ namespace Services
             });
 
             // Build digest input as the full endpoint path for GET
-            string gid = GetProperty(parameters, "gid")?.ToString();
+            string gid = GetProperty(parameters, "gid")?.ToString() ?? "";
             string digestPath = Endpoints.BuildEndpoint(Endpoints.TransactionService.Status, new Dictionary<string, string> { { "gid", gid } });
 
             // Generate tokens for JWT authentication (JWS signs the request path for GET)
@@ -44,7 +44,7 @@ namespace Services
             var headers = HeaderHelper.BuildJwtHeaders(tokens.Jws);
 
             // Make API request
-            var response = await ApiRequestHelper.MakeTransactionServiceRequest(new RequestOptions
+            var response = await ApiRequestHelper.MakeTransactionServiceRequest(new ApiRequestOptions
             {
                 Method = "GET",
                 BaseUrl = config.BaseUrl,

@@ -19,7 +19,7 @@ namespace Helpers
         /// <returns>The API response.</returns>
         /// <exception cref="ArgumentException">Thrown when required options are missing.</exception>
         /// <exception cref="HttpRequestException">Thrown when the API request fails.</exception>
-        public static async Task<object> MakeApiRequest(RequestOptions options)
+        public static async Task<object> MakeApiRequest(ApiRequestOptions options)
         {
             var logger = new Logger();
             try
@@ -70,9 +70,9 @@ namespace Helpers
         /// </summary>
         /// <param name="options">The request options.</param>
         /// <returns>The API response.</returns>
-        public static async Task<object> MakePaymentRequest(RequestOptions options)
+        public static async Task<object> MakePaymentRequest(ApiRequestOptions options)
         {
-            return await MakeApiRequest(new RequestOptions
+            return await MakeApiRequest(new ApiRequestOptions
             {
                 Method = options.Method,
                 BaseUrl = options.BaseUrl,
@@ -87,14 +87,14 @@ namespace Helpers
         /// </summary>
         /// <param name="options">The request options.</param>
         /// <returns>The API response.</returns>
-        public static async Task<object> MakeTransactionServiceRequest(RequestOptions options)
+        public static async Task<object> MakeTransactionServiceRequest(ApiRequestOptions options)
         {
-            return await MakeApiRequest(new RequestOptions
+            return await MakeApiRequest(new ApiRequestOptions
             {
                 Method = options.Method,
                 BaseUrl = options.BaseUrl,
                 Endpoint = options.Endpoint,
-                EndpointParams = new Dictionary<string, string> { { "gid", options.Gid } },
+                EndpointParams = new Dictionary<string, string> { { "gid", options.Gid ?? "" } },
                 RequestData = options.RequestData,
                 Headers = options.Headers
             });
@@ -105,9 +105,9 @@ namespace Helpers
         /// </summary>
         /// <param name="options">The request options.</param>
         /// <returns>The API response.</returns>
-        public static async Task<object> MakeSiServiceRequest(RequestOptions options)
+        public static async Task<object> MakeSiServiceRequest(ApiRequestOptions options)
         {
-            return await MakeApiRequest(new RequestOptions
+            return await MakeApiRequest(new ApiRequestOptions
             {
                 Method = options.Method,
                 BaseUrl = options.BaseUrl,
@@ -121,15 +121,15 @@ namespace Helpers
     /// <summary>
     /// Represents options for an API request.
     /// </summary>
-    public class RequestOptions
+    public class ApiRequestOptions
     {
         public string Method { get; set; } = "POST";
-        public string BaseUrl { get; set; }
-        public string Endpoint { get; set; }
-        public Dictionary<string, string> EndpointParams { get; set; }
-        public object RequestData { get; set; }
-        public Dictionary<string, string> Headers { get; set; }
-        public string Operation { get; set; }
-        public string Gid { get; set; }
+        public string BaseUrl { get; set; } = "";
+        public string Endpoint { get; set; } = "";
+        public Dictionary<string, string> EndpointParams { get; set; } = new Dictionary<string, string>();
+        public object RequestData { get; set; } = null;
+        public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
+        public string Operation { get; set; } = "";
+        public string Gid { get; set; } = "";
     }
 }

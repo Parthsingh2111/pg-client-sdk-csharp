@@ -50,7 +50,7 @@ namespace Helpers
             }
             catch (Exception ex)
             {
-                var logger = new Logger(null);
+                var logger = new Logger();
                 logger.Error("PEM import error: " + ex.Message);
                 throw new ArgumentException($"Crypto error: Invalid PEM format: {ex.Message}", ex);
             }
@@ -87,14 +87,14 @@ namespace Helpers
                 // Serialize payload
                 string payloadJson = JsonSerializer.Serialize(payload);
 
-                // Generate JWE using JOSE library
-                string jwe = Jose.JWE.Encrypt(payloadJson, publicKey, JweAlgorithm.RSA_OAEP_256, JweEncryption.A128CBC_HS256, extraHeaders: headers);
+                // Generate JWE using JOSE library (without extraHeaders parameter)
+                string jwe = Jose.JWE.Encrypt(payloadJson, publicKey, JweAlgorithm.RSA_OAEP_256, JweEncryption.A128CBC_HS256);
 
                 return Task.FromResult(jwe);
             }
             catch (Exception ex)
             {
-                var logger = new Logger(null);
+                var logger = new Logger();
                 logger.Error("JWE generation error: " + ex.Message);
                 throw new ArgumentException($"Failed to generate JWE: {ex.Message}", ex);
             }
@@ -143,15 +143,15 @@ namespace Helpers
                     // Get RSA private key for signing
                     RSA privateKey = PemToKey(config.MerchantPrivateKey, true);
 
-                    // Generate JWS using JOSE library
-                    string jws = Jose.JWT.Encode(payload, privateKey, JwsAlgorithm.RS256, extraHeaders: headers);
+                    // Generate JWS using JOSE library (without extraHeaders parameter)
+                    string jws = Jose.JWT.Encode(payload, privateKey, JwsAlgorithm.RS256);
 
                     return Task.FromResult(jws);
                 }
             }
             catch (Exception ex)
             {
-                var logger = new Logger(null);
+                var logger = new Logger();
                 logger.Error("JWS generation error: " + ex.Message);
                 throw new ArgumentException($"Failed to generate JWS: {ex.Message}", ex);
             }
@@ -166,7 +166,7 @@ namespace Helpers
         /// <returns>TokenResult containing JWE and JWS tokens.</returns>
         public static async Task<TokenResult> GenerateTokens(object payload, Config config, string operation)
         {
-            var logger = new Logger(null, config.LogLevel);
+            var logger = new Logger(config.LogLevel);
             
             try
             {

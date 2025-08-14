@@ -19,7 +19,7 @@ namespace Helpers
         /// <exception cref="ArgumentException">Thrown when validation fails.</exception>
         public static void ValidatePayload(object payload, PayloadValidationOptions options = null)
         {
-            var logger = new Logger(null);
+            var logger = new Logger();
             try
             {
                 if (payload == null)
@@ -102,7 +102,7 @@ namespace Helpers
 
             foreach (string key in keys)
             {
-                current = current[key];
+                current = current?[key];
                 if (current == null)
                 {
                     return null;
@@ -118,10 +118,10 @@ namespace Helpers
     /// </summary>
     public class PayloadValidationOptions
     {
-        public string[] RequiredFields { get; set; }
+        public string[] RequiredFields { get; set; } = null;
         public bool ValidateSchema { get; set; } = true;
-        public OperationTypeValidation OperationType { get; set; }
-        public ConditionalValidation ConditionalValidation { get; set; }
+        public OperationTypeValidation OperationType { get; set; } = null;
+        public ConditionalValidation ConditionalValidation { get; set; } = null;
     }
 
     /// <summary>
@@ -129,8 +129,8 @@ namespace Helpers
     /// </summary>
     public class OperationTypeValidation
     {
-        public string Field { get; set; } = string.Empty;
-        public string[] ValidTypes { get; set; }
+        public string Field { get; set; } = "";
+        public string[] ValidTypes { get; set; } = null;
     }
 
     /// <summary>
@@ -138,8 +138,8 @@ namespace Helpers
     /// </summary>
     public class ConditionalValidation
     {
-        public string Condition { get; set; } = string.Empty;
-        public string Value { get; set; } = string.Empty;
-        public string[] RequiredFields { get; set; }
+        public string Condition { get; set; } = "";
+        public string Value { get; set; } = "";
+        public string[] RequiredFields { get; set; } = null;
     }
 }

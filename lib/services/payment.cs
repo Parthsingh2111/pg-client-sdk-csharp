@@ -22,7 +22,7 @@ namespace Services
         /// <returns>Task representing the payment response.</returns>
         private static async Task<object> InitiatePayment(object parameters, Config config, PaymentOptions options = null)
         {
-            var logger = new Logger(null, config.LogLevel);
+            var logger = new Logger(config.LogLevel);
             options = options ?? new PaymentOptions();
             string operation = options.Operation ?? "payment";
             string endpoint = options.Endpoint ?? Endpoints.Payment.Initiate;
@@ -68,7 +68,7 @@ namespace Services
             }
 
             // 6. API Call with Response Processing
-            var response = await ApiRequestHelper.MakePaymentRequest(new RequestOptions
+            var response = await ApiRequestHelper.MakePaymentRequest(new ApiRequestOptions
             {
                 Method = "POST",
                 BaseUrl = config.BaseUrl,
@@ -80,8 +80,7 @@ namespace Services
 
             logger.Info($"{operation} completed successfully", new
             {
-                MerchantTxnId = GetProperty(parameters, "merchantTxnId"),
-                ResponseStatus = GetProperty(response, "status") ?? "unknown"
+                MerchantTxnId = GetProperty(parameters, "merchantTxnId")
             });
 
             return response;
@@ -236,26 +235,11 @@ namespace Services
     /// </summary>
     public class PaymentOptions
     {
-        public string Operation { get; set; }
-        public string Endpoint { get; set; }
-        public string[] RequiredFields { get; set; }
+        public string Operation { get; set; } = "";
+        public string Endpoint { get; set; } = "";
+        public string[] RequiredFields { get; set; } = Array.Empty<string>();
         public bool? UseJwt { get; set; }
-        public Action<object> CustomValidation { get; set; }
-        public Dictionary<string, string> CustomHeaders { get; set; }
-    }
-
-
-
-    /// <summary>
-    /// Represents options for making a payment request.
-    /// </summary>
-    public class RequestOptions
-    {
-        public string Method { get; set; }
-        public string BaseUrl { get; set; }
-        public string Endpoint { get; set; }
-        public object RequestData { get; set; }
-        public Dictionary<string, string> Headers { get; set; }
-        public string Operation { get; set; }
+        public Action<object> CustomValidation { get; set; } = null;
+        public Dictionary<string, string> CustomHeaders { get; set; } = new Dictionary<string, string>();
     }
 }

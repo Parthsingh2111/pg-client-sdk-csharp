@@ -450,7 +450,7 @@ namespace Helpers
         /// <exception cref="ArgumentException">Thrown when schema validation fails.</exception>
         public static ValidationResult ValidatePaycollectPayload(object payload, PayloadValidationOptions options = null)
         {
-            var logger = new Logger(null);
+            var logger = new Logger();
             try
             {
                 // Convert payload to JObject for validation
@@ -466,21 +466,7 @@ namespace Helpers
                     var problematicFields = errors.Select(err =>
                     {
                         string field = string.IsNullOrEmpty(err.Path) ? "root" : err.Path;
-                        string message;
-
-                        if (err.ErrorType == SchemaValidationErrorType.AdditionalProperties)
-                        {
-                            message = $"Unrecognized field \"{err.Message.Split('\'')[1]}\"";
-                        }
-                        else if (err.ErrorType == SchemaValidationErrorType.InvalidType)
-                        {
-                            var value = field.Split('.').Aggregate(jObject, (current, key) => current?[key]);
-                            message = $"Invalid type: expected {err.ExpectedType}, got {value?.Type}";
-                        }
-                        else
-                        {
-                            message = err.Message;
-                        }
+                        string message = err.Message;
 
                         return new { Field = field, Error = message };
                     }).ToList();
@@ -504,12 +490,6 @@ namespace Helpers
                     }
                 }
 
-                // Apply custom validation if provided
-                if (options?.CustomValidation != null)
-                {
-                    options.CustomValidation(payload);
-                }
-
                 logger.Debug("Payload has passed payglocal schema validation for payCollect method");
                 return new ValidationResult
                 {
@@ -530,7 +510,7 @@ namespace Helpers
 
             foreach (var token in tokens)
             {
-                current = current[token];
+                current = current?[token];
                 if (current == null)
                     return false;
             }
@@ -544,6 +524,6 @@ namespace Helpers
     /// </summary>
     public class ValidationResult
     {
-        public string Message { get; set; } = string.Empty;
+        public string Message { get; set; } = "";
     }
 }

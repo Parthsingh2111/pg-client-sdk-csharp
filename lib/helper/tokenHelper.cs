@@ -21,9 +21,9 @@ namespace Helpers
         /// <exception cref="ArgumentException">Thrown when token generation fails.</exception>
         public static async Task<TokenResult> GenerateTokens(object payload, Config config, string operation, string digestInput = null)
         {
+            var logger = new Logger();
             try
             {
-                var logger = new Logger();
                 // Generate JWE
                 string jwe;
                 try
@@ -55,7 +55,7 @@ namespace Helpers
             }
             catch (Exception ex)
             {
-                Logger.Error($"Token generation failed for {operation}", ex);
+                logger.Error($"Token generation failed for {operation}", ex);
                 throw;
             }
         }
@@ -66,7 +66,7 @@ namespace Helpers
     /// </summary>
     public class TokenResult
     {
-        public string Jwe { get; set; }
-        public string Jws { get; set; }
+        public string Jwe { get; set; } = "";
+        public string Jws { get; set; } = "";
     }
 }
