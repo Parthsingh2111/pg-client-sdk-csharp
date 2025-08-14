@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Constants; // Assuming namespace for Endpoints
 using Utils; // Assuming namespace for Logger
@@ -20,6 +21,7 @@ namespace Helpers
         /// <exception cref="HttpRequestException">Thrown when the API request fails.</exception>
         public static async Task<object> MakeApiRequest(RequestOptions options)
         {
+            var logger = new Logger(null);
             try
             {
                 if (string.IsNullOrEmpty(options.BaseUrl))
@@ -57,7 +59,7 @@ namespace Helpers
             }
             catch (Exception ex)
             {
-                Logger.Error($"API request failed: {options.Endpoint}", ex);
+                logger.Error($"API request failed: {options.Endpoint}", ex);
                 throw;
             }
         }

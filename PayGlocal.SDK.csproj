@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>PayGlocal.SDK</PackageId>
+    <PackageVersion>1.0.3</PackageVersion>
+    <Title>PayGlocal Payment Gateway SDK</Title>
+    <Authors>PayGlocal</Authors>
+    <Description>Official C# SDK for PayGlocal Payment Gateway API integration</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/payglocal/pg-client-sdk-csharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/payglocal/pg-client-sdk-csharp</RepositoryUrl>
+    <PackageTags>payment;gateway;payglocal;sdk;fintech</PackageTags>
+    <Copyright>Copyright © PayGlocal 2024</Copyright>
+    <RootNamespace>PayGlocal</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="jose-jwt" Version="4.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.15" />
+    <PackageReference Include="System.Text.Json" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="lib\**\*.cs" />
+  </ItemGroup>
+
+</Project> 

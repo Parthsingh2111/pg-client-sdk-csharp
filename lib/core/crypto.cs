@@ -1,14 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Core; // Assuming namespace for Config
-using Utils; // Assuming namespace for Logger
+using System.Threading.Tasks;
+using Jose;
+using Core;
+using Utils;
 
 namespace Helpers
 {
     /// <summary>
-    /// Provides cryptographic helper methods for generating JWE and JWS tokens.
+    /// Provides cryptographic helper methods for generating JWE and JWS tokens using JOSE standards.
     /// </summary>
     public static class CryptoHelper
     {
@@ -47,86 +50,64 @@ namespace Helpers
             }
             catch (Exception ex)
             {
-                Logger.Error("PEM import error: " + ex.Message);
+                var logger = new Logger(null);
+                logger.Error("PEM import error: " + ex.Message);
                 throw new ArgumentException($"Crypto error: Invalid PEM format: {ex.Message}", ex);
             }
         }
 
         /// <summary>
-        /// Generates a JWE token for the given payload.
+        /// Generates a JWE token for the given payload using JOSE standards.
         /// </summary>
         /// <param name="payload">Payload to encrypt.</param>
         /// <param name="config">Configuration object.</param>
         /// <returns>JWE token as a string.</returns>
         /// <exception cref="ArgumentException">Thrown when encryption fails.</exception>
-        public static async Task<string> GenerateJWE(object payload, Config config)
+        public static Task<string> GenerateJWE(object payload, Config config)
         {
             try
             {
                 long iat = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 long exp = iat + (config.TokenExpiration != 0 ? config.TokenExpiration : 300000); // Default 5 minutes
+                
+                // Get RSA public key for encryption
                 RSA publicKey = PemToKey(config.PayglocalPublicKey, false);
 
-                // Serialize payload to JSON
-                string payloadStr = JsonSerializer.Serialize(payload);
-
-                // Create protected header
-                var header = new
+                // Create JWE headers
+                var headers = new Dictionary<string, object>
                 {
-                    alg = "RSA-OAEP-256",
-                    enc = "A128CBC-HS256",
-                    iat = iat.ToString(),
-                    exp = exp.ToString(),
-                    kid = config.PublicKeyId,
-                    issued_by = config.MerchantId
+                    { "alg", "RSA-OAEP-256" },
+                    { "enc", "A128CBC-HS256" },
+                    { "iat", iat.ToString() },
+                    { "exp", exp.ToString() },
+                    { "kid", config.PublicKeyId },
+                    { "issued_by", config.MerchantId }
                 };
-                string headerJson = JsonSerializer.Serialize(header);
-                string headerBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(headerJson));
 
-                // Encrypt payload using RSA-OAEP and AES-128-CBC
-                using (var aes = Aes.Create())
-                {
-                    aes.KeySize = 128;
-                    aes.Mode = CipherMode.CBC;
-                    aes.GenerateKey();
-                    aes.GenerateIV();
+                // Serialize payload
+                string payloadJson = JsonSerializer.Serialize(payload);
 
-                    byte[] contentKey = aes.Key;
-                    byte[] iv = aes.IV;
+                // Generate JWE using JOSE library
+                string jwe = Jose.JWE.Encrypt(payloadJson, new RSA[] { publicKey }, JweAlgorithm.RSA_OAEP_256, JweEncryption.A128CBC_HS256, extraHeaders: headers);
 
-                    // Encrypt content key with RSA-OAEP
-                    byte[] encryptedKey = publicKey.Encrypt(contentKey, RSAEncryptionPadding.OaepSHA256);
-
-                    // Encrypt payload with AES-128-CBC
-                    byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadStr);
-                    using (var encryptor = aes.CreateEncryptor())
-                    {
-                        byte[] encryptedPayload = encryptor.TransformFinalBlock(payloadBytes, 0, payloadBytes.Length);
-
-                        // Construct JWE: header.key.iv.ciphertext
-                        string keyBase64 = Convert.ToBase64String(encryptedKey);
-                        string ivBase64 = Convert.ToBase64String(iv);
-                        string ciphertextBase64 = Convert.ToBase64String(encryptedPayload);
-
-                        return $"{headerBase64}.{keyBase64}.{ivBase64}.{ciphertextBase64}";
-                    }
-                }
+                return Task.FromResult(jwe);
             }
             catch (Exception ex)
             {
-                Logger.Error("JWE generation error: " + ex.Message);
+                var logger = new Logger(null);
+                logger.Error("JWE generation error: " + ex.Message);
                 throw new ArgumentException($"Failed to generate JWE: {ex.Message}", ex);
             }
         }
 
         /// <summary>
-        /// Generates a JWS token for a digestible string (e.g., JWE or request path).
+        /// Generates a JWS token for a digestible string using JOSE standards.
         /// </summary>
         /// <param name="toDigest">Input string to hash.</param>
         /// <param name="config">Configuration object.</param>
         /// <returns>JWS token as a string.</returns>
         /// <exception cref="ArgumentException">Thrown when signing fails.</exception>
-        public static async Task<string> GenerateJWS(string toDigest, Config config)
+        public static Task<string> GenerateJWS(string toDigest, Config config)
         {
             try
             {
@@ -139,7 +120,7 @@ namespace Helpers
                     byte[] digestBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(toDigest));
                     string digestBase64 = Convert.ToBase64String(digestBytes);
 
-                    // Create payload
+                    // Create JWS payload
                     var payload = new
                     {
                         digest = digestBase64,
@@ -147,48 +128,33 @@ namespace Helpers
                         exp,
                         iat = iat.ToString()
                     };
-                    string payloadJson = JsonSerializer.Serialize(payload);
-                    string payloadBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(payloadJson));
 
-                    // Create header
-                    var header = new
+                    // Create JWS headers
+                    var headers = new Dictionary<string, object>
                     {
-                        issued_by = config.MerchantId,
-                        alg = "RS256",
-                        kid = config.PrivateKeyId,
-                        x_gl_merchantId = config.MerchantId,
-                        x_gl_enc = "true",
-                        is_digested = "true"
+                        { "issued_by", config.MerchantId },
+                        { "alg", "RS256" },
+                        { "kid", config.PrivateKeyId },
+                        { "x_gl_merchantId", config.MerchantId },
+                        { "x_gl_enc", "true" },
+                        { "is_digested", "true" }
                     };
-                    string headerJson = JsonSerializer.Serialize(header);
-                    string headerBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(headerJson));
 
-                    // Sign with RS256
+                    // Get RSA private key for signing
                     RSA privateKey = PemToKey(config.MerchantPrivateKey, true);
-                    using (var rsa = privateKey)
-                    {
-                        byte[] dataToSign = Encoding.UTF8.GetBytes($"{headerBase64}.{payloadBase64}");
-                        byte[] signature = rsa.SignData(dataToSign, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-                        string signatureBase64 = Convert.ToBase64String(signature);
 
-                        return $"{headerBase64}.{payloadBase64}.{signatureBase64}";
-                    }
+                    // Generate JWS using JOSE library
+                    string jws = Jose.JWT.Encode(payload, privateKey, JwsAlgorithm.RS256, extraHeaders: headers);
+
+                    return Task.FromResult(jws);
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error("JWS generation error: " + ex.Message);
+                var logger = new Logger(null);
+                logger.Error("JWS generation error: " + ex.Message);
                 throw new ArgumentException($"Failed to generate JWS: {ex.Message}", ex);
             }
-        }
-
-        /// <summary>
-        /// Represents the result of token generation.
-        /// </summary>
-        public class TokenResult
-        {
-            public string Jwe { get; set; }
-            public string Jws { get; set; }
         }
 
         /// <summary>
@@ -196,13 +162,28 @@ namespace Helpers
         /// </summary>
         /// <param name="payload">Payload to encrypt.</param>
         /// <param name="config">Configuration object.</param>
-        /// <param name="operation">Operation name (unused in this implementation).</param>
+        /// <param name="operation">Operation name (for logging).</param>
         /// <returns>TokenResult containing JWE and JWS tokens.</returns>
         public static async Task<TokenResult> GenerateTokens(object payload, Config config, string operation)
         {
-            string jwe = await GenerateJWE(payload, config);
-            string jws = await GenerateJWS(jwe, config);
-            return new TokenResult { Jwe = jwe, Jws = jws };
+            var logger = new Logger(null, config.LogLevel);
+            
+            try
+            {
+                logger.Debug($"Generating JOSE-compliant tokens for {operation}");
+                
+                string jwe = await GenerateJWE(payload, config);
+                string jws = await GenerateJWS(jwe, config);
+                
+                logger.Debug($"Successfully generated JOSE tokens for {operation}");
+                
+                return new TokenResult { Jwe = jwe, Jws = jws };
+            }
+            catch (Exception ex)
+            {
+                logger.Error($"Token generation failed for {operation}", ex);
+                throw;
+            }
         }
     }
 }

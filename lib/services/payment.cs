@@ -1,9 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Helpers; // Assuming namespace for TokenHelper, ValidationHelper, ApiRequestHelper, HeaderHelper
-using Constants; // Assuming namespace for Endpoints
-using Utils; // Assuming namespace for Logger
+using Helpers;
+using Constants;
+using Utils;
+using Core;
 
 namespace Services
 {
@@ -21,6 +22,7 @@ namespace Services
         /// <returns>Task representing the payment response.</returns>
         private static async Task<object> InitiatePayment(object parameters, Config config, PaymentOptions options = null)
         {
+            var logger = new Logger(null, config.LogLevel);
             options = options ?? new PaymentOptions();
             string operation = options.Operation ?? "payment";
             string endpoint = options.Endpoint ?? Endpoints.Payment.Initiate;
@@ -29,7 +31,7 @@ namespace Services
             Action<object> customValidation = options.CustomValidation;
             Dictionary<string, string> customHeaders = options.CustomHeaders ?? new Dictionary<string, string>();
 
-            Logger.Info($"Initiating {operation}", new
+            logger.Info($"Initiating {operation}", new
             {
                 MerchantTxnId = GetProperty(parameters, "merchantTxnId"),
                 UseJwt = useJwt,
@@ -37,17 +39,16 @@ namespace Services
             });
 
             // 1-3. Comprehensive Validation (Schema, Custom, Required Fields)
-            ValidationHelper.ValidatePayload(parameters, new ValidationOptions
+            PayloadValidationHelper.ValidatePayload(parameters, new PayloadValidationOptions
             {
-                Operation = operation,
                 RequiredFields = requiredFields,
-                CustomValidation = customValidation
+                ValidateSchema = true
             });
 
             // 4. Custom Validation Processing (Payment-specific business logic)
             if (customValidation != null)
             {
-                Logger.Debug($"Executing custom validation for {operation}");
+                logger.Debug($"Executing custom validation for {operation}");
                 customValidation(parameters);
             }
 
@@ -77,7 +78,7 @@ namespace Services
                 Operation = operation
             });
 
-            Logger.Info($"{operation} completed successfully", new
+            logger.Info($"{operation} completed successfully", new
             {
                 MerchantTxnId = GetProperty(parameters, "merchantTxnId"),
                 ResponseStatus = GetProperty(response, "status") ?? "unknown"

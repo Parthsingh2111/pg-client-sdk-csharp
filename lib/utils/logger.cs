@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
 
 namespace Utils
 {
@@ -10,7 +9,6 @@ namespace Utils
     /// </summary>
     public class Logger
     {
-        private readonly ILogger _logger;
         private readonly Dictionary<string, int> _levels = new Dictionary<string, int>
         {
             { "error", 0 },
@@ -23,11 +21,10 @@ namespace Utils
         /// <summary>
         /// Initializes a new instance of the Logger class.
         /// </summary>
-        /// <param name="logger">The ILogger instance for logging.</param>
+        /// <param name="logger">The ILogger instance for logging (can be null for console logging).</param>
         /// <param name="level">The log level (error, warn, info, debug). Defaults to "info".</param>
-        public Logger(ILogger<Logger> logger, string level = "info")
+        public Logger(object logger, string level = "info")
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _level = NormalizeLevel(level);
         }
 
@@ -44,7 +41,7 @@ namespace Utils
                 return normalized;
             }
 
-            _logger.LogWarning("[LOGGER] Invalid log level \"{Level}\", defaulting to \"info\"", level);
+            Console.WriteLine($"[LOGGER] Invalid log level \"{level}\", defaulting to \"info\"");
             return "info";
         }
 
@@ -99,7 +96,7 @@ namespace Utils
 
             if (error is Exception ex)
             {
-                _logger.LogError("{Message}", FormatMessage("error", message, new
+                Console.Error.WriteLine(FormatMessage("error", message, new
                 {
                     Error = ex.Message,
                     Stack = ex.StackTrace,
@@ -108,7 +105,7 @@ namespace Utils
             }
             else
             {
-                _logger.LogError("{Message}", FormatMessage("error", message, error));
+                Console.Error.WriteLine(FormatMessage("error", message, error));
             }
         }
 
@@ -122,7 +119,7 @@ namespace Utils
             if (!ShouldLog("warn"))
                 return;
 
-            _logger.LogWarning("{Message}", FormatMessage("warn", message, data));
+            Console.WriteLine(FormatMessage("warn", message, data));
         }
 
         /// <summary>
@@ -135,7 +132,7 @@ namespace Utils
             if (!ShouldLog("info"))
                 return;
 
-            _logger.LogInformation("{Message}", FormatMessage("info", message, data));
+            Console.WriteLine(FormatMessage("info", message, data));
         }
 
         /// <summary>
@@ -148,7 +145,7 @@ namespace Utils
             if (!ShouldLog("debug"))
                 return;
 
-            _logger.LogDebug("{Message}", FormatMessage("debug", message, data));
+            Console.WriteLine(FormatMessage("debug", message, data));
         }
 
         /// <summary>

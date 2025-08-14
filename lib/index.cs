@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using Core; // Assuming namespace for Config, Crypto
-using Services; // Assuming namespace for Payment, Refund, Capture, Reversal, Status, SiUpdate
-using Utils; // Assuming namespace for Logger
+using Core;
+using Services;
+using Utils;
 
 namespace PayGlocal
 {
@@ -11,7 +11,7 @@ namespace PayGlocal
     public class PayGlocalClient
     {
         private readonly Config _config;
-        private readonly ILogger _logger;
+        private readonly Logger _logger;
 
         /// <summary>
         /// Initializes a new instance of the PayGlocalClient class.
@@ -20,8 +20,52 @@ namespace PayGlocal
         public PayGlocalClient(Config config = null)
         {
             _config = config ?? new Config();
-            Logger.LogConfig(_config);
-            Logger.Info("PayGlocalClient initialized successfully");
+            _logger = new Logger(null, _config.LogLevel);
+            _logger.LogConfig(_config);
+            _logger.Info("PayGlocalClient initialized successfully");
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the PayGlocalClient class with environment variable configuration.
+        /// </summary>
+        /// <param name="merchantId">Merchant ID from environment or parameter</param>
+        /// <param name="apiKey">API Key from environment or parameter</param>
+        /// <param name="environment">Environment (UAT/PROD) from environment or parameter</param>
+        /// <param name="publicKeyId">Public Key ID for JWT authentication</param>
+        /// <param name="privateKeyId">Private Key ID for JWT authentication</param>
+        /// <param name="payglocalPublicKey">PayGlocal Public Key for JWT authentication</param>
+        /// <param name="merchantPrivateKey">Merchant Private Key for JWT authentication</param>
+        /// <param name="logLevel">Log level</param>
+        /// <param name="tokenExpiration">Token expiration in milliseconds</param>
+        public PayGlocalClient(
+            string merchantId = null,
+            string apiKey = null,
+            string environment = null,
+            string publicKeyId = null,
+            string privateKeyId = null,
+            string payglocalPublicKey = null,
+            string merchantPrivateKey = null,
+            string logLevel = null,
+            int? tokenExpiration = null)
+        {
+            // Use environment variables with fallback to parameters
+            var configData = new
+            {
+                MerchantId = merchantId ?? System.Environment.GetEnvironmentVariable("PAYGLOCAL_MERCHANT_ID"),
+                ApiKey = apiKey ?? System.Environment.GetEnvironmentVariable("PAYGLOCAL_API_KEY"),
+                PayglocalEnv = environment ?? System.Environment.GetEnvironmentVariable("PAYGLOCAL_ENV"),
+                PublicKeyId = publicKeyId ?? System.Environment.GetEnvironmentVariable("PAYGLOCAL_PUBLIC_KEY_ID"),
+                PrivateKeyId = privateKeyId ?? System.Environment.GetEnvironmentVariable("PAYGLOCAL_PRIVATE_KEY_ID"),
+                PayglocalPublicKey = payglocalPublicKey ?? System.Environment.GetEnvironmentVariable("PAYGLOCAL_PUBLIC_KEY"),
+                MerchantPrivateKey = merchantPrivateKey ?? System.Environment.GetEnvironmentVariable("PAYGLOCAL_PRIVATE_KEY"),
+                LogLevel = logLevel ?? System.Environment.GetEnvironmentVariable("PAYGLOCAL_LOG_LEVEL") ?? "info",
+                TokenExpiration = tokenExpiration ?? (int.TryParse(System.Environment.GetEnvironmentVariable("PAYGLOCAL_TOKEN_EXPIRATION"), out int exp) ? exp : 300000)
+            };
+
+            _config = new Config(configData);
+            _logger = new Logger(null, _config.LogLevel);
+            _logger.LogConfig(_config);
+            _logger.Info("PayGlocalClient initialized successfully with environment configuration");
         }
 
         /// <summary>
