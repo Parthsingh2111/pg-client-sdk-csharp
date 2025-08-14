@@ -21,7 +21,7 @@ namespace Services
         /// <returns>Task representing the capture response.</returns>
         public static async Task<object> InitiateCapture(object parameters, Config config)
         {
-            var logger = new Logger(null, config.LogLevel);
+            var logger = new Logger(config.LogLevel);
             logger.Info("Initiating capture", new
             {
                 Gid = GetProperty(parameters, "gid")
@@ -52,11 +52,7 @@ namespace Services
                 Operation = "capture"
             });
 
-            logger.Info("Capture completed successfully", new
-            {
-                Gid = gid,
-                ResponseStatus = GetProperty(response, "status") ?? "unknown"
-            });
+            logger.Info("Capture completed successfully", new { Gid = gid });
 
             return response;
         }

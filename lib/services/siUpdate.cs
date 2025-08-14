@@ -57,11 +57,7 @@ namespace Services
                 Operation = "si-pause"
             });
 
-            logger.Info("SI pause completed successfully", new
-            {
-                SiId = GetProperty(parameters, "siId"),
-                ResponseStatus = GetProperty(response, "status") ?? "unknown"
-            });
+            logger.Info("SI pause completed successfully", new { SiId = GetProperty(parameters, "siId") });
 
             return response;
         }
@@ -110,11 +106,7 @@ namespace Services
                 Operation = "si-activate"
             });
 
-            logger.Info("SI activation completed successfully", new
-            {
-                SiId = GetProperty(parameters, "siId"),
-                ResponseStatus = GetProperty(response, "status") ?? "unknown"
-            });
+            logger.Info("SI activation completed successfully", new { SiId = GetProperty(parameters, "siId") });
 
             return response;
         }

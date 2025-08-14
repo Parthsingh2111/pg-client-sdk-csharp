@@ -21,7 +21,7 @@ namespace Services
         /// <returns>Task representing the reversal response.</returns>
         public static async Task<object> InitiateAuthReversal(object parameters, Config config)
         {
-            var logger = new Logger(null, config.LogLevel);
+            var logger = new Logger(config.LogLevel);
             logger.Info("Initiating auth reversal", new
             {
                 Gid = GetProperty(parameters, "gid")
@@ -52,11 +52,7 @@ namespace Services
                 Operation = "auth-reversal"
             });
 
-            logger.Info("Auth reversal completed successfully", new
-            {
-                Gid = gid,
-                ResponseStatus = GetProperty(response, "status") ?? "unknown"
-            });
+            logger.Info("Auth reversal completed successfully", new { Gid = gid });
 
             return response;
         }

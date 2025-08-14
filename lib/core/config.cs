@@ -72,6 +72,7 @@ namespace Core
         /// <exception cref="ArgumentException">Thrown when required configuration is missing or invalid.</exception>
         public Config(dynamic config = null)
         {
+            var logger = new Logger();
             try
             {
                 // Default values
@@ -95,7 +96,7 @@ namespace Core
                 string baseUrlEnv = PayglocalEnv.ToUpper();
                 if (!BaseUrls.TryGetValue(baseUrlEnv, out string baseUrl))
                 {
-                    Logger.Error($"Invalid environment \"{baseUrlEnv}\" provided. Must be \"UAT\" or \"PROD\".");
+                    logger.Error($"Invalid environment \"{baseUrlEnv}\" provided. Must be \"UAT\" or \"PROD\".");
                     throw new ArgumentException($"Invalid environment \"{baseUrlEnv}\" provided. Must be \"UAT\" or \"PROD\".");
                 }
                 BaseUrl = baseUrl;
@@ -125,7 +126,7 @@ namespace Core
             }
             catch (Exception ex)
             {
-                Logger.Error("Configuration error: " + ex.Message);
+                logger.Error("Configuration error: " + ex.Message);
                 throw new ArgumentException(ex.Message ?? "Configuration initialization failed", ex);
             }
         }

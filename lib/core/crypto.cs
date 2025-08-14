@@ -88,7 +88,7 @@ namespace Helpers
                 string payloadJson = JsonSerializer.Serialize(payload);
 
                 // Generate JWE using JOSE library
-                string jwe = Jose.JWE.Encrypt(payloadJson, new RSA[] { publicKey }, JweAlgorithm.RSA_OAEP_256, JweEncryption.A128CBC_HS256, extraHeaders: headers);
+                string jwe = Jose.JWE.Encrypt(payloadJson, publicKey, JweAlgorithm.RSA_OAEP_256, JweEncryption.A128CBC_HS256, extraHeaders: headers);
 
                 return Task.FromResult(jwe);
             }

@@ -81,7 +81,8 @@ namespace Helpers
         {
             try
             {
-                Logger.LogRequest("POST", url, headers, data);
+                var logger = new Logger();
+                logger.LogRequest("POST", url, headers, data);
 
                 HttpContent content = null;
                 var optionsHeaders = headers ?? new Dictionary<string, string>();
@@ -106,7 +107,8 @@ namespace Helpers
                 };
 
                 var response = await MakeRequest(url, options);
-                Logger.LogResponse("POST", url, 200, response);
+                var logger = new Logger();
+                logger.LogResponse("POST", url, 200, response);
 
                 return response ?? new object();
             }
@@ -128,16 +130,18 @@ namespace Helpers
         {
             try
             {
-                Logger.LogRequest("GET", url, headers);
+                var logger = new Logger();
+                logger.LogRequest("GET", url, headers);
 
                 var options = new HttpRequestOptions
                 {
                     Method = "GET",
-                    Headers = headers
+                    Headers = headers ?? new Dictionary<string, string>()
                 };
 
                 var response = await MakeRequest(url, options);
-                Logger.LogResponse("GET", url, 200, response);
+                var logger = new Logger();
+                logger.LogResponse("GET", url, 200, response);
 
                 return response ?? new object();
             }
@@ -160,7 +164,8 @@ namespace Helpers
         {
             try
             {
-                Logger.LogRequest("PUT", url, headers, data);
+                var logger = new Logger();
+                logger.LogRequest("PUT", url, headers, data);
 
                 HttpContent content = null;
                 var optionsHeaders = headers ?? new Dictionary<string, string>();
@@ -185,7 +190,8 @@ namespace Helpers
                 };
 
                 var response = await MakeRequest(url, options);
-                Logger.LogResponse("PUT", url, 200, response);
+                var logger = new Logger();
+                logger.LogResponse("PUT", url, 200, response);
 
                 return response ?? new object();
             }

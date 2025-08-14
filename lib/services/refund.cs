@@ -21,7 +21,7 @@ namespace Services
         /// <returns>Task representing the refund response.</returns>
         public static async Task<object> InitiateRefund(object parameters, Config config)
         {
-            var logger = new Logger(null, config.LogLevel);
+            var logger = new Logger(config.LogLevel);
             logger.Info("Initiating refund", new
             {
                 Gid = GetProperty(parameters, "gid")
@@ -52,11 +52,7 @@ namespace Services
                 Operation = "refund"
             });
 
-            logger.Info("Refund completed successfully", new
-            {
-                Gid = gid,
-                ResponseStatus = GetProperty(response, "status") ?? "unknown"
-            });
+            logger.Info("Refund completed successfully", new { Gid = gid });
 
             return response;
         }

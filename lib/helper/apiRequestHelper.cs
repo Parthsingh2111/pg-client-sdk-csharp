@@ -21,7 +21,7 @@ namespace Helpers
         /// <exception cref="HttpRequestException">Thrown when the API request fails.</exception>
         public static async Task<object> MakeApiRequest(RequestOptions options)
         {
-            var logger = new Logger(null);
+            var logger = new Logger();
             try
             {
                 if (string.IsNullOrEmpty(options.BaseUrl))
@@ -30,22 +30,23 @@ namespace Helpers
                     throw new ArgumentException("Endpoint is required");
 
                 // Build full URL
-                string fullEndpoint = Endpoints.BuildEndpoint(options.Endpoint, options.EndpointParams);
+                string fullEndpoint = Endpoints.BuildEndpoint(options.Endpoint, options.EndpointParams ?? new Dictionary<string, string>());
                 string fullUrl = $"{options.BaseUrl}{fullEndpoint}";
 
                 // Make the API call
                 object response;
                 string method = options.Method?.ToUpper() ?? "POST";
+                var headers = options.Headers ?? new Dictionary<string, string>();
                 switch (method)
                 {
                     case "GET":
-                        response = await HttpClientHelper.Get(fullUrl, options.Headers);
+                        response = await HttpClientHelper.Get(fullUrl, headers);
                         break;
                     case "PUT":
-                        response = await HttpClientHelper.Put(fullUrl, options.RequestData, options.Headers);
+                        response = await HttpClientHelper.Put(fullUrl, options.RequestData, headers);
                         break;
                     default:
-                        response = await HttpClientHelper.Post(fullUrl, options.RequestData, options.Headers);
+                        response = await HttpClientHelper.Post(fullUrl, options.RequestData, headers);
                         break;
                 }
 

@@ -18,6 +18,9 @@ namespace Utils
         };
         private readonly string _level;
 
+        public Logger() : this("info") { }
+        public Logger(string level) : this(null, level) { }
+
         /// <summary>
         /// Initializes a new instance of the Logger class.
         /// </summary>

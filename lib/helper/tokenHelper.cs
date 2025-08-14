@@ -23,6 +23,7 @@ namespace Helpers
         {
             try
             {
+                var logger = new Logger();
                 // Generate JWE
                 string jwe;
                 try
@@ -31,7 +32,7 @@ namespace Helpers
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error($"JWE generation failed for {operation}: {ex.Message}", ex);
+                    logger.Error($"JWE generation failed for {operation}: {ex.Message}", ex);
                     throw new ArgumentException($"Failed to generate JWE for {operation}: {ex.Message}", ex);
                 }
 
@@ -44,11 +45,11 @@ namespace Helpers
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error($"JWS generation failed for {operation}: {ex.Message}", ex);
+                    logger.Error($"JWS generation failed for {operation}: {ex.Message}", ex);
                     throw new ArgumentException($"Failed to generate JWS for {operation}: {ex.Message}", ex);
                 }
 
-                Logger.Debug($"Tokens generated for {operation}");
+                logger.Debug($"Tokens generated for {operation}");
 
                 return new TokenResult { Jwe = jwe, Jws = jws };
             }
