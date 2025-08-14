@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>PayGlocal.SDK</PackageId>
     <PackageVersion>1.0.3</PackageVersion>
@@ -26,6 +27,7 @@
 
   <ItemGroup>
     <Compile Include="lib\**\*.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
   </ItemGroup>
 
 </Project> 

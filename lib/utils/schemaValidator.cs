@@ -4,7 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
-using Utils; // Assuming namespace for Logger
+using Utils;
 
 namespace Helpers
 {
@@ -448,8 +448,9 @@ namespace Helpers
         /// <param name="options">Validation options including operation, required fields, and custom validation.</param>
         /// <returns>A validation result object.</returns>
         /// <exception cref="ArgumentException">Thrown when schema validation fails.</exception>
-        public static ValidationResult ValidatePaycollectPayload(object payload, ValidationOptions options = null)
+        public static ValidationResult ValidatePaycollectPayload(object payload, PayloadValidationOptions options = null)
         {
+            var logger = new Logger(null);
             try
             {
                 // Convert payload to JObject for validation
@@ -484,7 +485,7 @@ namespace Helpers
                         return new { Field = field, Error = message };
                     }).ToList();
 
-                    Logger.Error("Validation errors, verify the payload structure, problematic field", problematicFields);
+                    logger.Error("Validation errors, verify the payload structure, problematic field", problematicFields);
                     throw new ArgumentException("Schema validation failed");
                 }
 
@@ -498,7 +499,7 @@ namespace Helpers
 
                     if (missingFields.Any())
                     {
-                        Logger.Error("Validation errors, verify the payload structure, problematic field", missingFields);
+                        logger.Error("Validation errors, verify the payload structure, problematic field", missingFields);
                         throw new ArgumentException("Required fields validation failed");
                     }
                 }
@@ -509,7 +510,7 @@ namespace Helpers
                     options.CustomValidation(payload);
                 }
 
-                Logger.Debug("Payload has passed payglocal schema validation for payCollect method");
+                logger.Debug("Payload has passed payglocal schema validation for payCollect method");
                 return new ValidationResult
                 {
                     Message = "Payload is valid, payload has passed payglocal schema validation for payCollect method"
@@ -517,7 +518,7 @@ namespace Helpers
             }
             catch (Exception ex)
             {
-                Logger.Error("Payload validation failed", ex);
+                logger.Error("Payload validation failed", ex);
                 throw new ArgumentException($"Payload validation failed: {ex.Message}", ex);
             }
         }
@@ -543,6 +544,6 @@ namespace Helpers
     /// </summary>
     public class ValidationResult
     {
-        public string Message { get; set; }
+        public string Message { get; set; } = string.Empty;
     }
 }

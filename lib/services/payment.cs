@@ -244,15 +244,7 @@ namespace Services
         public Dictionary<string, string> CustomHeaders { get; set; }
     }
 
-    /// <summary>
-    /// Represents validation options for payload validation.
-    /// </summary>
-    public class ValidationOptions
-    {
-        public string Operation { get; set; }
-        public string[] RequiredFields { get; set; }
-        public Action<object> CustomValidation { get; set; }
-    }
+
 
     /// <summary>
     /// Represents options for making a payment request.

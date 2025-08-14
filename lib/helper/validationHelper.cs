@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using Utils; // For Logger
+using Utils;
 
 namespace Helpers
 {
@@ -17,8 +17,9 @@ namespace Helpers
         /// <param name="payload">The payload to validate.</param>
         /// <param name="options">Validation options.</param>
         /// <exception cref="ArgumentException">Thrown when validation fails.</exception>
-        public static void ValidatePayload(object payload, PayloadValidationOptions? options = null)
+        public static void ValidatePayload(object payload, PayloadValidationOptions options = null)
         {
+            var logger = new Logger(null);
             try
             {
                 if (payload == null)
@@ -26,14 +27,14 @@ namespace Helpers
                     throw new ArgumentException("Payload cannot be null");
                 }
 
-                options ??= new PayloadValidationOptions();
+                options = options ?? new PayloadValidationOptions();
 
                 // Convert payload to JObject for nested field access
                 string jsonPayload = Newtonsoft.Json.JsonConvert.SerializeObject(payload);
                 JObject jObject = JObject.Parse(jsonPayload);
 
                 // 1. Required Fields Validation
-                if (options.RequiredFields?.Length > 0)
+                if (options.RequiredFields != null && options.RequiredFields.Length > 0)
                 {
                     var validationData = new Dictionary<string, object>();
                     foreach (string field in options.RequiredFields)
@@ -85,16 +86,16 @@ namespace Helpers
                     ValidationHelper.ValidatePaycollectPayload(payload);
                 }
 
-                Logger.Debug("Validation passed");
+                logger.Debug("Validation passed");
             }
             catch (Exception ex)
             {
-                Logger.Error("Validation failed", ex);
+                logger.Error("Validation failed", ex);
                 throw new ArgumentException(ex.Message, ex);
             }
         }
 
-        private static object? GetFieldValue(JObject jObject, string fieldPath)
+        private static object GetFieldValue(JObject jObject, string fieldPath)
         {
             var keys = fieldPath.Split('.');
             JToken current = jObject;
@@ -117,10 +118,10 @@ namespace Helpers
     /// </summary>
     public class PayloadValidationOptions
     {
-        public string[]? RequiredFields { get; set; }
+        public string[] RequiredFields { get; set; }
         public bool ValidateSchema { get; set; } = true;
-        public OperationTypeValidation? OperationType { get; set; }
-        public ConditionalValidation? ConditionalValidation { get; set; }
+        public OperationTypeValidation OperationType { get; set; }
+        public ConditionalValidation ConditionalValidation { get; set; }
     }
 
     /// <summary>
@@ -129,7 +130,7 @@ namespace Helpers
     public class OperationTypeValidation
     {
         public string Field { get; set; } = string.Empty;
-        public string[]? ValidTypes { get; set; }
+        public string[] ValidTypes { get; set; }
     }
 
     /// <summary>
@@ -139,6 +140,6 @@ namespace Helpers
     {
         public string Condition { get; set; } = string.Empty;
         public string Value { get; set; } = string.Empty;
-        public string[]? RequiredFields { get; set; }
+        public string[] RequiredFields { get; set; }
     }
 }
