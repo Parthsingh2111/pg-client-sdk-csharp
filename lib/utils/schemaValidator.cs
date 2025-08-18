@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
@@ -454,7 +455,7 @@ namespace Helpers
             try
             {
                 // Convert payload to JObject for validation
-                string jsonPayload = JsonSerializer.Serialize(payload);
+                string jsonPayload = System.Text.Json.JsonSerializer.Serialize(payload, new JsonSerializerOptions());
                 JObject jObject = JObject.Parse(jsonPayload);
 
                 // Validate against schema

@@ -56,7 +56,7 @@ namespace Helpers
                     response.EnsureSuccessStatusCode();
 
                     var content = await response.Content.ReadAsStringAsync();
-                    return string.IsNullOrEmpty(content) ? new object() : JsonSerializer.Deserialize<object>(content);
+                    return string.IsNullOrEmpty(content) ? new object() : content;
                 }
                 catch (OperationCanceledException)
                 {

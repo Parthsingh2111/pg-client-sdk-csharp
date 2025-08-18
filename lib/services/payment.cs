@@ -25,11 +25,14 @@ namespace Services
             var logger = new Logger(config.LogLevel);
             options = options ?? new PaymentOptions();
             string operation = options.Operation ?? "payment";
-            string endpoint = options.Endpoint ?? Endpoints.Payment.Initiate;
+            string endpoint = string.IsNullOrEmpty(options.Endpoint) ? Endpoints.Payment.Initiate : options.Endpoint;
             string[] requiredFields = options.RequiredFields ?? Array.Empty<string>();
             bool useJwt = options.UseJwt ?? true;
             Action<object> customValidation = options.CustomValidation;
             Dictionary<string, string> customHeaders = options.CustomHeaders ?? new Dictionary<string, string>();
+
+            // Debug logging to check endpoint values
+            logger.Debug($"Endpoint debug - options.Endpoint: '{options.Endpoint}', Endpoints.Payment.Initiate: '{Endpoints.Payment.Initiate}', final endpoint: '{endpoint}'");
 
             logger.Info($"Initiating {operation}", new
             {

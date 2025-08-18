@@ -26,6 +26,20 @@ namespace Helpers
                 return; // No fields to validate
             }
 
+            // Handle Dictionary<string, object> case (from validation helper)
+            if (data is System.Collections.Generic.Dictionary<string, object> dict)
+            {
+                foreach (string field in fields)
+                {
+                    if (!dict.ContainsKey(field) || dict[field] == null)
+                    {
+                        throw new ArgumentException($"Missing required field: {field}");
+                    }
+                }
+                return;
+            }
+
+            // Handle regular objects with properties
             foreach (string field in fields)
             {
                 string[] keys = field.Split('.');

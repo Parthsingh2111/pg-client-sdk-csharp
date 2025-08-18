@@ -73,22 +73,20 @@ namespace Helpers
                 // Get RSA public key for encryption
                 RSA publicKey = PemToKey(config.PayglocalPublicKey, false);
 
-                // Create JWE headers
-                var headers = new Dictionary<string, object>
-                {
-                    { "alg", "RSA-OAEP-256" },
-                    { "enc", "A128CBC-HS256" },
-                    { "iat", iat.ToString() },
-                    { "exp", exp.ToString() },
-                    { "kid", config.PublicKeyId },
-                    { "issued_by", config.MerchantId }
-                };
-
                 // Serialize payload
                 string payloadJson = JsonSerializer.Serialize(payload);
 
-                // Generate JWE using JOSE library (without extraHeaders parameter)
-                string jwe = Jose.JWE.Encrypt(payloadJson, publicKey, JweAlgorithm.RSA_OAEP_256, JweEncryption.A128CBC_HS256);
+                // Create JWE headers matching working implementation
+                var jweHeaders = new Dictionary<string, object>
+                {
+                    { "iat", iat.ToString() },
+                    { "exp", iat + 300000 },
+                    { "kid", config.PublicKeyId },
+                    { "issued-by", config.MerchantId }
+                };
+
+                // Generate JWE using JWT.Encode (matching working implementation)
+                string jwe = Jose.JWT.Encode(payloadJson, publicKey, JweAlgorithm.RSA_OAEP_256, JweEncryption.A128CBC_HS256, extraHeaders: jweHeaders);
 
                 return Task.FromResult(jwe);
             }
@@ -114,37 +112,39 @@ namespace Helpers
                 long iat = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 long exp = iat + (config.TokenExpiration != 0 ? config.TokenExpiration : 300000); // Default 5 minutes
 
-                // Create SHA-256 digest
+                // Create SHA-256 digest matching JavaScript implementation
                 using (var sha256 = SHA256.Create())
                 {
                     byte[] digestBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(toDigest));
                     string digestBase64 = Convert.ToBase64String(digestBytes);
 
-                    // Create JWS payload
-                    var payload = new
+                    // Create JWS payload matching working implementation
+                    var digestObject = new
                     {
                         digest = digestBase64,
                         digestAlgorithm = "SHA-256",
-                        exp,
+                        exp = 300000, // Align with working implementation for consistency
                         iat = iat.ToString()
                     };
 
-                    // Create JWS headers
-                    var headers = new Dictionary<string, object>
+                    var digestJson = JsonSerializer.Serialize(digestObject);
+
+                    // Create JWS headers matching working implementation
+                    var jwsHeaders = new Dictionary<string, object>
                     {
-                        { "issued_by", config.MerchantId },
-                        { "alg", "RS256" },
+                        { "alg", "RS256" }, // Explicitly include alg
+                        { "issued-by", config.MerchantId },
                         { "kid", config.PrivateKeyId },
-                        { "x_gl_merchantId", config.MerchantId },
-                        { "x_gl_enc", "true" },
-                        { "is_digested", "true" }
+                        { "x-gl-merchantId", config.MerchantId },
+                        { "x-gl-enc", "true" },
+                        { "is-digested", "true" }
                     };
 
                     // Get RSA private key for signing
                     RSA privateKey = PemToKey(config.MerchantPrivateKey, true);
 
-                    // Generate JWS using JOSE library (without extraHeaders parameter)
-                    string jws = Jose.JWT.Encode(payload, privateKey, JwsAlgorithm.RS256);
+                    // Generate JWS using JWT.Encode (matching working implementation)
+                    string jws = Jose.JWT.Encode(digestJson, privateKey, JwsAlgorithm.RS256, extraHeaders: jwsHeaders);
 
                     return Task.FromResult(jws);
                 }
